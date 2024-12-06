@@ -1,8 +1,29 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:globeupdates/pages/detail_screen.dart';
 import 'package:globeupdates/theme/theme.dart';
+import 'package:http/http.dart' as http;
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Future<List> fetchNews() async {
+    const String apiUrl =
+        'https://newsapi.org/v2/top-headlines?country=us&apiKey=0ebe6cd23c6843bc93fe9e51bde2ee4c';
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return data['articles'];
+    } else {
+      throw Exception('Failed to load news');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,304 +67,233 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/background.jpg'),
-            fit: BoxFit.cover,
-            opacity: 0.2,
-          ),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RichText(
-                      text: const TextSpan(
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'Welcome to ',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          TextSpan(
-                            text: 'GlobeUpdates',
-                            style: TextStyle(
-                              color: Colors.cyan,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 10.0,
-                                  color: Colors.cyan,
-                                  offset: Offset(0, 0),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Stay informed, anytime, anywhere',
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://image.cnbcfm.com/api/v1/image/107184140-1674688167894-gettyimages-1246537833-SALESFORCE_ELLIOTT.jpeg?v=1733266762&w=1920&h=1080',
-                  ),
-                  fit: BoxFit.cover,
-                  opacity: 0.5,
-                ),
-              ),
-              child: Stack(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withOpacity(0.6),
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.center,
+                  RichText(
+                    text: const TextSpan(
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 45.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Salesforce surges on revenue beat, AI growth prospects here s our new price target for the stock - CNBC',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        TextSpan(
+                          text: 'Welcome to ',
+                          style: TextStyle(color: Colors.white),
                         ),
-                        Text(
-                          'Salesforce made clear that Agentforce, its new AI offering, can kickstart revenue growth in the quarters ahead.',
+                        TextSpan(
+                          text: 'GlobeUpdates',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.cyan,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 10.0,
+                                color: Colors.cyan,
+                                offset: Offset(0, 0),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Stay informed, anytime, anywhere',
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 15),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      child: const Text(
-                        'General',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
+          ),
+          SizedBox(
+            height: 250,
+            child: FutureBuilder<List>(
+              future: fetchNews(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.darkTheme.primaryColor,
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                      ),
-                      child: const Text(
-                        'Sport',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.cyan,
-                      ),
-                      child: const Text(
-                        'Tech',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-                      ),
-                      child: const Text(
-                        'Politics',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'Top Trending',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(
-                          'https://images.axios.com/ImxMdS2ZpAbNZVDAnOZ2arCDtOc=/0x0:7743x4355/1366x768/2024/12/03/1733262336096.jpg'),
-                      fit: BoxFit.cover,
-                      opacity: 0.3,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                  ),
-                  child: Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black.withOpacity(0.6),
-                              Colors.transparent,
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No news available'));
+                } else {
+                  final news = snapshot.data!;
+                  return PageView.builder(
+                    itemCount: news.length,
+                    itemBuilder: (context, index) {
+                      final article = news[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailScreen(
+                                title: article['title'] ?? 'No Title',
+                                description:
+                                    article['description'] ?? 'No Description',
+                                imageUrl: article['urlToImage'] ?? '',
+                                author: article['author'] ?? 'Unknown Author',
+                                url: article['url'] ?? '',
+                                content: article['content'] ?? '',
+                                publishedAt: article['publishedAt'] ?? '',
+                              ),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Stack(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppTheme.darkTheme.primaryColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    width: 1,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                        article['urlToImage'] ?? ''),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.black.withOpacity(0.8),
+                                      Colors.transparent,
+                                    ],
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 20,
+                                left: 20,
+                                right: 20,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      article['title'] ?? 'No Title',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      article['description'] ??
+                                          'No Description',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 14,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.center,
                           ),
                         ),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text(
+                      'General',
+                      style: TextStyle(
+                        color: Colors.white,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 45.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Salesforce surges on revenue beat, AI growth prospects here s our new price target for the stock - CNBC',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Salesforce made clear that Agentforce, its new AI offering, can kickstart revenue growth in the quarters ahead.',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blueGrey.shade900,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: Image.asset('assets/profile.png').image,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text(
+                      'Sport',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Username',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  const Text(
-                    'example@email.com',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.cyan,
+                    ),
+                    child: const Text(
+                      'Tech',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                    ),
+                    child: const Text(
+                      'Politics',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
