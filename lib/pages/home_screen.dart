@@ -29,44 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppTheme.darkTheme.appBarTheme.backgroundColor,
-        automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-            Expanded(
-              child: Center(
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.cyanAccent.withOpacity(0.3),
-                        blurRadius: 15.0,
-                        spreadRadius: 1.0,
-                      ),
-                    ],
-                  ),
-                  child: Image.asset(
-                    'assets/logo.png',
-                    height: 30,
-                  ),
-                ),
-              ),
-            ),
-            CircleAvatar(
-              radius: 20,
-              backgroundImage: Image.asset('assets/profile.jpg').image,
-            ),
-          ],
-        ),
-      ),
       body: Column(
         children: [
           Padding(
@@ -164,10 +126,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 1,
                                     color: Colors.grey.shade600,
                                   ),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        article['urlToImage'] ?? ''),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: Image.network(
+                                    article['urlToImage'] ?? '',
                                     fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+
+                                      return Center(
+                                        child: SizedBox(
+                                          width: 40,
+                                          height: 40,
+                                          child: CircularProgressIndicator(
+                                            color:
+                                                AppTheme.darkTheme.primaryColor,
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null, // Null indicates an indeterminate spinner.
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                      Icons.broken_image,
+                                      size: 50,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ),
                               ),

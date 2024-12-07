@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globeupdates/layouts/global_layout.dart';
 import 'package:intl/intl.dart';
 
 class DetailScreen extends StatelessWidget {
@@ -32,34 +33,17 @@ class DetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Detail News"),
-      ),
-      body: SingleChildScrollView(
+    return GlobalLayout(
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar Berita
-            imageUrl.isNotEmpty
-                ? Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 200,
-                  )
-                : const SizedBox(
-                    height: 200,
-                    child: Center(child: Text('No Image Available')),
-                  ),
-
-            // Padding konten
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Judul Berita
                   Text(
                     title,
                     style: const TextStyle(
@@ -68,9 +52,21 @@ class DetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-
-                  // Author dan Tanggal
-                  Row(
+                  imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 200,
+                        )
+                      : const SizedBox(
+                          height: 200,
+                          child: Center(child: Text('No Image Available')),
+                        ),
+                  const SizedBox(height: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       if (author.isNotEmpty) ...[
                         Text(
@@ -89,20 +85,15 @@ class DetailScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Deskripsi Berita
                   Text(
                     description,
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 16),
-
                   Text(
                     content,
                     style: const TextStyle(fontSize: 16),
                   ),
-
-                  // Sumber Berita
                   GestureDetector(
                     onTap: () {
                       if (url.isNotEmpty) {
@@ -122,7 +113,6 @@ class DetailScreen extends StatelessWidget {
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  // Launch URL (require `url_launcher` package)
                                 },
                                 child: const Text("Open"),
                               ),
@@ -131,9 +121,9 @@ class DetailScreen extends StatelessWidget {
                         );
                       }
                     },
-                    child: Text(
+                    child: const Text(
                       "Read more on Axios",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         color: Colors.blue,
                         decoration: TextDecoration.underline,

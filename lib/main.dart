@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globeupdates/layouts/global_layout.dart';
 import 'package:globeupdates/pages/home_screen.dart';
 import 'package:globeupdates/theme/theme.dart';
 
@@ -14,7 +15,9 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const HomeScreen(),
+      home: GlobalLayout(
+        child: const HomeScreen(),
+      ),
     );
   }
 }
