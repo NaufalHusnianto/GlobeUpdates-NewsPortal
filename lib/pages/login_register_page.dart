@@ -115,6 +115,22 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _appLogos() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 50),
+      child: SizedBox(
+        width: 100,
+        height: 100,
+        child: ClipOval(
+          child: Image.asset(
+            'assets/logo.png',
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _loginOrRegisterButton() {
     return TextButton(
       onPressed: () {
@@ -141,6 +157,7 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              _appLogos(),
               if (!isLogin) _registerFields(), // Tambahkan ini
               _entryField('Email', _controllerEmail, false),
               _entryField('Password', _controllerPassword, true),
