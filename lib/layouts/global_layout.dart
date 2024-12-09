@@ -3,12 +3,13 @@ import 'package:globeupdates/components/custom_app_bar.dart';
 import 'package:globeupdates/theme/theme.dart';
 import 'package:globeupdates/auth.dart';
 import 'package:globeupdates/pages/home_screen.dart';
+import 'package:globeupdates/pages/bookmark_page.dart';
 import 'package:globeupdates/pages/login_register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class GlobalLayout extends StatelessWidget {
   final Widget child;
-
+  final List<String> bookmarkedArticles = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   GlobalLayout({super.key, required this.child});
@@ -88,6 +89,22 @@ class GlobalLayout extends StatelessWidget {
               child: const ListTile(
                 leading: Icon(Icons.home),
                 title: Text('Home'),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookmarkPage(
+                      bookmarkedArticles: bookmarkedArticles,
+                    ),
+                  ),
+                );
+              },
+              child: const ListTile(
+                leading: Icon(Icons.home),
+                title: Text('Bookmark'),
               ),
             ),
             const Divider(), // Divider untuk memisahkan logout

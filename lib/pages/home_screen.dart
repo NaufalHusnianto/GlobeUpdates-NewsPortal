@@ -16,6 +16,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> topNews = [];
   List<dynamic> categoryNews = [];
   List<dynamic> sources = [];
+  List<dynamic> bookmarkedArticles = [];
+
   String selectedCategory = 'general';
 
   final List<Map<String, String>> categories = [
@@ -312,6 +314,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNewsListItem(BuildContext context, dynamic article) {
+    final isBookmarked = bookmarkedArticles.contains(article);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -357,15 +361,36 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    article['title'] ?? 'No Title',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          article['title'] ?? 'No Title',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                          color: isBookmarked ? Colors.yellow : Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (isBookmarked) {
+                              bookmarkedArticles.remove(article);
+                            } else {
+                              bookmarkedArticles.add(article);
+                            }
+                          });
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 5),
                   Text(
