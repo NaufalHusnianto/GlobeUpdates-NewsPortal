@@ -111,7 +111,13 @@ class _LoginPageState extends State<LoginPage> {
     return ElevatedButton(
       onPressed:
           isLogin ? signInWithEmailAndPassword : createUserWithEmailAndPassword,
-      child: Text(isLogin ? 'Login' : 'Register'),
+      child: Text(
+        isLogin ? 'Login' : 'Register',
+        style: const TextStyle(
+          color: Colors.cyan,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -119,13 +125,11 @@ class _LoginPageState extends State<LoginPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 50),
       child: SizedBox(
-        width: 100,
-        height: 100,
-        child: ClipOval(
-          child: Image.asset(
-            'assets/logo.png',
-            fit: BoxFit.cover,
-          ),
+        width: 250,
+        height: 250,
+        child: Image.asset(
+          isLogin ? 'assets/login.png' : 'assets/register.png',
+          fit: BoxFit.cover,
         ),
       ),
     );
@@ -138,7 +142,12 @@ class _LoginPageState extends State<LoginPage> {
           isLogin = !isLogin;
         });
       },
-      child: Text(isLogin ? 'Register' : 'Login'),
+      child: Text(
+        isLogin ? 'Register' : 'Login',
+        style: const TextStyle(
+          color: Colors.white,
+        ),
+      ),
     );
   }
 
@@ -158,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               _appLogos(),
-              if (!isLogin) _registerFields(), // Tambahkan ini
+              if (!isLogin) _registerFields(),
               _entryField('Email', _controllerEmail, false),
               _entryField('Password', _controllerPassword, true),
               _errorMessage(),
