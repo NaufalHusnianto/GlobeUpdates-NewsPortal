@@ -17,6 +17,9 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
 
+  final TextEditingController _controllerFullName = TextEditingController();
+  final TextEditingController _controllerUsername = TextEditingController();
+
   Future<void> signInWithEmailAndPassword() async {
     try {
       await Auth().signInWithEmailAndPassword(
@@ -36,8 +39,14 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> createUserWithEmailAndPassword() async {
     try {
       await Auth().createUserWithEmailAndPassword(
-          email: _controllerEmail.text, password: _controllerPassword.text);
-      // Navigasi ke HomeScreen setelah registrasi berhasil
+        email: _controllerEmail.text,
+        password: _controllerPassword.text,
+      );
+
+      await FirebaseAuth.instance.currentUser?.updateDisplayName(
+        '${_controllerFullName.text} (${_controllerUsername.text})',
+      );
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -50,7 +59,28 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _title() {
-    return const Text('GlobeUpdates');
+    return Row(
+      children: [
+        Image.asset(
+          'assets/logo.png', // Gambar logo Anda
+          height: 30, // Ukuran gambar
+        ),
+        const SizedBox(width: 10), // Spasi antara gambar dan teks
+        const Text(
+          'GlobeUpdates',
+          style: TextStyle(
+            color: Colors.cyan,
+            shadows: [
+              Shadow(
+                blurRadius: 10.0,
+                color: Colors.cyan,
+                offset: Offset(0, 0),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _entryField(
@@ -66,6 +96,15 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _errorMessage() {
     return Text(errorMessage == '' ? '' : 'Humm ? $errorMessage');
+  }
+
+  Widget _registerFields() {
+    return Column(
+      children: [
+        _entryField('Fullname', _controllerFullName, false),
+        _entryField('Username', _controllerUsername, false),
+      ],
+    );
   }
 
   Widget _submitButton() {
@@ -93,20 +132,23 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         title: _title(),
       ),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _entryField('Email', _controllerEmail, false),
-            _entryField('Password', _controllerPassword, true),
-            _errorMessage(),
-            _submitButton(),
-            _loginOrRegisterButton(),
-          ],
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              if (!isLogin) _registerFields(), // Tambahkan ini
+              _entryField('Email', _controllerEmail, false),
+              _entryField('Password', _controllerPassword, true),
+              _errorMessage(),
+              _submitButton(),
+              _loginOrRegisterButton(),
+            ],
+          ),
         ),
       ),
     );

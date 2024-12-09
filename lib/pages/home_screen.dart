@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:globeupdates/layouts/global_layout.dart';
 import 'package:globeupdates/pages/detail_screen.dart';
 import 'package:globeupdates/theme/theme.dart';
 import 'package:http/http.dart' as http;
@@ -29,265 +30,268 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  RichText(
-                    text: const TextSpan(
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: 'Welcome to ',
-                          style: TextStyle(color: Colors.white),
+      body: GlobalLayout(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    RichText(
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        TextSpan(
-                          text: 'GlobeUpdates',
-                          style: TextStyle(
-                            color: Colors.cyan,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 10.0,
-                                color: Colors.cyan,
-                                offset: Offset(0, 0),
-                              ),
-                            ],
+                        children: [
+                          TextSpan(
+                            text: 'Welcome to ',
+                            style: TextStyle(color: Colors.white),
                           ),
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Stay informed, anytime, anywhere',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 250,
-            child: FutureBuilder<List>(
-              future: fetchNews(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.darkTheme.primaryColor,
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No news available'));
-                } else {
-                  final news = snapshot.data!;
-                  return PageView.builder(
-                    itemCount: news.length,
-                    itemBuilder: (context, index) {
-                      final article = news[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailScreen(
-                                title: article['title'] ?? 'No Title',
-                                description:
-                                    article['description'] ?? 'No Description',
-                                imageUrl: article['urlToImage'] ?? '',
-                                author: article['author'] ?? 'Unknown Author',
-                                url: article['url'] ?? '',
-                                content: article['content'] ?? '',
-                                publishedAt: article['publishedAt'] ?? '',
-                              ),
+                          TextSpan(
+                            text: 'GlobeUpdates',
+                            style: TextStyle(
+                              color: Colors.cyan,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 10.0,
+                                  color: Colors.cyan,
+                                  offset: Offset(0, 0),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Stack(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppTheme.darkTheme.primaryColor,
-                                  borderRadius: BorderRadius.circular(15),
-                                  border: Border.all(
-                                    width: 1,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: Image.network(
-                                    article['urlToImage'] ?? '',
-                                    fit: BoxFit.cover,
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-
-                                      return Center(
-                                        child: SizedBox(
-                                          width: 40,
-                                          height: 40,
-                                          child: CircularProgressIndicator(
-                                            color:
-                                                AppTheme.darkTheme.primaryColor,
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
-                                                : null, // Null indicates an indeterminate spinner.
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                      Icons.broken_image,
-                                      size: 50,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.black.withOpacity(0.8),
-                                      Colors.transparent,
-                                    ],
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 20,
-                                left: 20,
-                                right: 20,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      article['title'] ?? 'No Title',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      article['description'] ??
-                                          'No Description',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Stay informed, anytime, anywhere',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text(
-                      'General',
-                      style: TextStyle(
-                        color: Colors.white,
+            SizedBox(
+              height: 250,
+              child: FutureBuilder<List>(
+                future: fetchNews(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.darkTheme.primaryColor,
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No news available'));
+                  } else {
+                    final news = snapshot.data!;
+                    return PageView.builder(
+                      itemCount: news.length,
+                      itemBuilder: (context, index) {
+                        final article = news[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailScreen(
+                                  title: article['title'] ?? 'No Title',
+                                  description:
+                                      article['description'] ?? 'No Description',
+                                  imageUrl: article['urlToImage'] ?? '',
+                                  author: article['author'] ?? 'Unknown Author',
+                                  url: article['url'] ?? '',
+                                  content: article['content'] ?? '',
+                                  publishedAt: article['publishedAt'] ?? '',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.darkTheme.primaryColor,
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      width: 1,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: Image.network(
+                                      article['urlToImage'] ?? '',
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+        
+                                        return Center(
+                                          child: SizedBox(
+                                            width: 40,
+                                            height: 40,
+                                            child: CircularProgressIndicator(
+                                              color:
+                                                  AppTheme.darkTheme.primaryColor,
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null, // Null indicates an indeterminate spinner.
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(
+                                        Icons.broken_image,
+                                        size: 50,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.black.withOpacity(0.8),
+                                        Colors.transparent,
+                                      ],
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 20,
+                                  left: 20,
+                                  right: 20,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        article['title'] ?? 'No Title',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        article['description'] ??
+                                            'No Description',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 14,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: TextButton(
+                      onPressed: () {},
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text(
+                        'General',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                    ),
-                    child: const Text(
-                      'Sport',
-                      style: TextStyle(
-                        color: Colors.white,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: TextButton(
+                      onPressed: () {},
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text(
+                        'Sport',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.cyan,
-                    ),
-                    child: const Text(
-                      'Tech',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.indigo,
-                    ),
-                    child: const Text(
-                      'Politics',
-                      style: TextStyle(color: Colors.white),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: TextButton(
+                      onPressed: () {},
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.cyan,
+                      ),
+                      child: const Text(
+                        'Tech',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: TextButton(
+                      onPressed: () {},
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                      ),
+                      child: const Text(
+                        'Politics',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          
+        ),
       ),
     );
   }

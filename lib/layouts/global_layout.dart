@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:globeupdates/components/custom_app_bar.dart';
 import 'package:globeupdates/theme/theme.dart';
+import 'package:globeupdates/auth.dart';
+import 'package:globeupdates/pages/home_screen.dart';
+import 'package:globeupdates/pages/login_register_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class GlobalLayout extends StatelessWidget {
   final Widget child;
@@ -26,9 +30,9 @@ class GlobalLayout extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.cyan[900],
               ),
-              child: const Column(
+              child: Column(
                 children: [
-                  Text(
+                  const Text(
                     'GlobeUpdates',
                     style: TextStyle(
                       color: Colors.white,
@@ -44,24 +48,26 @@ class GlobalLayout extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 30,
                     backgroundImage: AssetImage('assets/profile.jpg'),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
+                    padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
                     child: Column(
                       children: [
                         Text(
-                          'Naufal Husnianto',
-                          style: TextStyle(
+                          FirebaseAuth.instance.currentUser?.displayName ??
+                              'No Name',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
                           ),
                         ),
                         Text(
-                          'husniantonaufal@gmail.com',
-                          style: TextStyle(
+                          FirebaseAuth.instance.currentUser?.email ??
+                              'No Email',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                           ),
@@ -74,11 +80,49 @@ class GlobalLayout extends StatelessWidget {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/');
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                );
               },
               child: const ListTile(
                 leading: Icon(Icons.home),
                 title: Text('Home'),
+              ),
+            ),
+            const Divider(), // Divider untuk memisahkan logout
+            GestureDetector(
+              onTap: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Logout'),
+                    content: const Text('Are you sure you want to logout?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Logout'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (shouldLogout ?? false) {
+                  await Auth().signOut();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                    (route) => false,
+                  );
+                }
+              },
+              child: const ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Logout'),
               ),
             ),
           ],
