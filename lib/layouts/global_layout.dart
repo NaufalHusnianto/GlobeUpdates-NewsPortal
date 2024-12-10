@@ -119,9 +119,8 @@ class GlobalLayout extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => BookmarkPage(
-                      bookmarkedArticles: bookmarkedArticles,
-                    ),
+                    builder: (context) =>
+                        const BookmarkPage(), // Hapus parameter bookmarkedArticles
                   ),
                 );
               },

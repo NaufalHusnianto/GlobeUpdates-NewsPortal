@@ -27,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Sport', 'value': 'sports'},
     {'name': 'Tech', 'value': 'technology'},
     {'name': 'Business', 'value': 'business'},
+    {'name': 'Entertainment', 'value': 'entertainment'},
+    {'name': 'Education', 'value': 'education'},
   ];
 
   @override
@@ -39,16 +41,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Metode untuk mensanitasi URL
   String _sanitizeUrl(String url) {
-    // Hapus protokol (http:// atau https://)
     url = url.replaceFirst(RegExp(r'^https?://'), '');
 
-    // Ganti double slash dengan single slash
     url = url.replaceAll('//', '/');
 
-    // Hapus karakter yang tidak valid untuk ID Firestore
     url = url.replaceAll(RegExp(r'[.#$\[\]]'), '_');
 
-    // Potong panjang URL jika terlalu panjang
     return url.length > 50 ? url.substring(0, 50) : url;
   }
 
@@ -258,11 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
         body: CustomScrollView(
           slivers: [
-            // Header and Top News Section
             SliverToBoxAdapter(
               child: Column(
                 children: [
-                  // [Previous header code remains the same]
                   SizedBox(
                     height: 250,
                     child: topNews.isEmpty
@@ -286,26 +282,36 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverPersistentHeader(
               pinned: true,
               delegate: _StickyHeaderDelegate(
-                child: Row(
-                  children: categories
-                      .map((category) => Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: TextButton(
-                                onPressed: () =>
-                                    _onCategorySelected(category['value']!),
-                                style: TextButton.styleFrom(
-                                  backgroundColor:
-                                      _getCategoryColor(category['value']!),
-                                ),
-                                child: Text(
-                                  category['name']!,
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ))
-                      .toList(),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                      child: TextButton(
+                        onPressed: () =>
+                            _onCategorySelected(category['value']!),
+                        style: TextButton.styleFrom(
+                          backgroundColor:
+                              _getCategoryColor(category['value']!),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: Text(
+                          category['name']!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -342,6 +348,10 @@ class _HomeScreenState extends State<HomeScreen> {
         return Colors.cyan;
       case 'business':
         return Colors.indigo;
+      case 'education':
+        return Colors.amberAccent;
+      case 'entertainment':
+        return Colors.tealAccent;
       default:
         return Colors.grey;
     }
