@@ -92,11 +92,30 @@ class _ProfilePageState extends State<ProfilePage> {
             if (_isEditing)
               Column(
                 children: [
-                  TextField(
-                    controller: _fullnameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
-                      border: OutlineInputBorder(),
+                  const Text(
+                    'Edit Profile',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: TextField(
+                      controller: _fullnameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    user?.email ?? 'No Email',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -105,6 +124,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       ElevatedButton(
                         onPressed: _updateProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.cyan[800],
+                          foregroundColor: Colors.white,
+                        ),
                         child: const Text('Save'),
                       ),
                       const SizedBox(width: 8),
@@ -115,7 +138,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
+                          backgroundColor: Colors.grey[800],
+                          foregroundColor: Colors.white,
                         ),
                         child: const Text('Cancel'),
                       ),
@@ -126,7 +150,6 @@ class _ProfilePageState extends State<ProfilePage> {
             else
               Column(
                 children: [
-                  // Nama pengguna
                   Text(
                     user?.displayName ?? 'No Name',
                     style: const TextStyle(
@@ -135,8 +158,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-
-                  // Email pengguna
                   Text(
                     user?.email ?? 'No Email',
                     style: const TextStyle(
