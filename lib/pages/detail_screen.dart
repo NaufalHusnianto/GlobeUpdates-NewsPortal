@@ -102,7 +102,8 @@ class DetailScreen extends StatelessWidget {
                           builder: (context) => AlertDialog(
                             title: const Text("External Link"),
                             content: const Text(
-                                "You will be redirected to the original news website."),
+                              "You will be redirected to the original news website.",
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () {

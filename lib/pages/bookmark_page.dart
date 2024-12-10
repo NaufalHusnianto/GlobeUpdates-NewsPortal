@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:globeupdates/pages/detail_screen.dart';
 
 class BookmarkPage extends StatefulWidget {
-  const BookmarkPage({Key? key}) : super(key: key);
+  const BookmarkPage({super.key});
 
   @override
   _BookmarkPageState createState() => _BookmarkPageState();
@@ -66,7 +66,6 @@ class _BookmarkPageState extends State<BookmarkPage> {
     try {
       final bookmarks = await _getBookmarks(user.uid);
 
-      // Tambahkan logging untuk debugging
       print('User ID: ${user.uid}');
       print('Bookmarks fetched: ${bookmarks.length}');
       bookmarks.forEach((article) {
@@ -94,7 +93,6 @@ class _BookmarkPageState extends State<BookmarkPage> {
     try {
       final snapshot = await userBookmarksRef.get();
 
-      // Tambahkan logging untuk debugging
       print('Total bookmarks in snapshot: ${snapshot.docs.length}');
 
       return snapshot.docs.map((doc) {

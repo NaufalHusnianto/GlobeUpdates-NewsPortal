@@ -25,7 +25,6 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await Auth().signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
-      // Navigasi ke HomeScreen setelah login berhasil
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),

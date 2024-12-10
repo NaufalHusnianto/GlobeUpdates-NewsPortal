@@ -119,8 +119,7 @@ class GlobalLayout extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        const BookmarkPage(), // Hapus parameter bookmarkedArticles
+                    builder: (context) => const BookmarkPage(),
                   ),
                 );
               },
@@ -143,7 +142,7 @@ class GlobalLayout extends StatelessWidget {
                 title: Text('Profile'),
               ),
             ),
-            const Divider(), // Divider untuk memisahkan logout
+            const Divider(),
             GestureDetector(
               onTap: () async {
                 final shouldLogout = await showDialog<bool>(

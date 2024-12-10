@@ -44,7 +44,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           InkWell(
             onTap: () {
-              // Navigasi ke ProfilePage
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ProfilePage()),

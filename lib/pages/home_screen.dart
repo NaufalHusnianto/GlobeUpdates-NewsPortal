@@ -6,6 +6,7 @@ import 'package:globeupdates/pages/detail_screen.dart';
 import 'package:globeupdates/theme/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,8 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = 'general';
   String searchQuery = '';
 
-  final TextEditingController searchController = TextEditingController();
-
   final List<Map<String, String>> categories = [
     {'name': 'General', 'value': 'general'},
     {'name': 'Sport', 'value': 'sports'},
@@ -34,6 +33,9 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Entertainment', 'value': 'entertainment'},
     {'name': 'Science', 'value': 'science'},
   ];
+
+  final TextEditingController searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -44,18 +46,22 @@ class _HomeScreenState extends State<HomeScreen> {
     searchController.addListener(_onSearchChanged);
   }
 
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
   void _onSearchChanged() {
-    setState(() {
-      searchQuery = searchController.text.toLowerCase();
-      filteredCategoryNews = categoryNews.where((article) {
-        // Memeriksa apakah judul artikel mengandung kata kunci pencarian
-        final title = article['title']?.toLowerCase() ?? '';
-        return title.contains(searchQuery);
-      }).toList();
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      setState(() {
+        searchQuery = searchController.text.toLowerCase();
+      });
+      await filterSearchResults();
     });
   }
 
-  // Metode untuk mensanitasi URL
   String _sanitizeUrl(String url) {
     url = url.replaceFirst(RegExp(r'^https?://'), '');
 
@@ -161,7 +167,6 @@ class _HomeScreenState extends State<HomeScreen> {
         'publishedAt': article['publishedAt'] ?? '',
       });
 
-      // Perbarui daftar artikel yang di-bookmark di lokal
       setState(() {
         bookmarkedArticles.add(article);
       });
@@ -182,12 +187,10 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('articles');
 
     try {
-      // Sanitasi URL sebelum menghapus
       final sanitizedUrl = _sanitizeUrl(articleUrl);
 
       await userBookmarksRef.doc(sanitizedUrl).delete();
 
-      // Hapus dari daftar artikel yang di-bookmark di lokal
       setState(() {
         bookmarkedArticles
             .removeWhere((article) => article['url'] == articleUrl);
@@ -223,7 +226,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('articles');
 
     try {
-      // Sanitasi URL sebelum memeriksa
       final sanitizedUrl = _sanitizeUrl(articleUrl);
 
       final doc = await userBookmarksRef.doc(sanitizedUrl).get();
@@ -248,6 +250,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> filterSearchResults() async {
+    await Future.delayed(Duration(seconds: 1));
+    setState(() {
+      filteredCategoryNews = categoryNews.where((article) {
+        final title = article['title']?.toLowerCase() ?? '';
+        return title.contains(searchQuery);
+      }).toList();
+    });
+  }
+
   Stream<List<Map<String, dynamic>>> bookmarksStream(String userId) {
     final userBookmarksRef = FirebaseFirestore.instance
         .collection('bookmarks')
@@ -262,145 +274,130 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
- Widget build(BuildContext context) {
-  return GlobalLayout(
-    child: Scaffold(
-      backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          // Top News Section (PageView for top headlines)
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 250, // Adjust height for top news
-              child: topNews.isEmpty
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.darkTheme.primaryColor,
-                      ),
-                    )
-                  : PageView.builder(
-                      itemCount: topNews.length,
-                      itemBuilder: (context, index) {
-                        return _buildTopNewsItem(context, topNews[index]);
-                      },
-                    ),
-            ),
-          ),
-
-          // Search Bar Section (if it's visible, above the category buttons)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: TextField(
-                controller: searchController,
-                onChanged: (query) {
-                  setState(() {
-                    searchQuery = query.toLowerCase();
-                    filteredCategoryNews = categoryNews.where((article) {
-                      final title = article['title']?.toLowerCase() ?? '';
-                      return title.contains(searchQuery);
-                    }).toList();
-                  });
-                },
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Search news...',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.black.withOpacity(0.6),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  prefixIcon: Icon(Icons.search, color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-
-          // Category Buttons (always visible below search bar)
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyHeaderDelegate(
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                    child: TextButton(
-                      onPressed: () => _onCategorySelected(category['value']!),
-                      style: TextButton.styleFrom(
-                        backgroundColor: _getCategoryColor(category['value']!),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: Text(
-                        category['name']!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // Show search results below categories (if search query exists)
-          if (searchQuery.isNotEmpty) 
+  Widget build(BuildContext context) {
+    return GlobalLayout(
+      child: Scaffold(
+        backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
+        body: CustomScrollView(
+          slivers: [
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 250, // Adjust the height based on the content
-                child: filteredCategoryNews.isEmpty
+                height: 250,
+                child: topNews.isEmpty
                     ? Center(
-                        child: Text(
-                          'No articles found for "$searchQuery"',
-                          style: TextStyle(color: Colors.white),
+                        child: CircularProgressIndicator(
+                          color: AppTheme.darkTheme.primaryColor,
                         ),
                       )
-                    : ListView.builder(
-                        itemCount: filteredCategoryNews.length,
+                    : PageView.builder(
+                        itemCount: topNews.length,
                         itemBuilder: (context, index) {
-                          return _buildNewsListItem(context, filteredCategoryNews[index]);
+                          return _buildTopNewsItem(context, topNews[index]);
                         },
                       ),
               ),
             ),
-          
-          // Show category news (if search query is empty)
-          if (searchQuery.isEmpty) 
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final article = categoryNews[index];
-                  return _buildNewsListItem(context, article);
-                },
-                childCount: categoryNews.length,
-              ),
-            ),
-          
-          // Loading or Empty State for Category News (if search query is empty)
-          if (searchQuery.isEmpty && categoryNews.isEmpty)
-            SliverToBoxAdapter(
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.darkTheme.primaryColor,
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _StickyHeaderDelegate(
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                      child: TextButton(
+                        onPressed: () =>
+                            _onCategorySelected(category['value']!),
+                        style: TextButton.styleFrom(
+                          backgroundColor:
+                              _getCategoryColor(category['value']!),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: Text(
+                          category['name']!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-        ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: TextField(
+                  controller: searchController,
+                  onChanged: (query) {},
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Search news...',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.black.withOpacity(0.6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: Icon(Icons.search, color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+            if (searchQuery.isNotEmpty)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 250,
+                  child: filteredCategoryNews.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No articles found for "$searchQuery"',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: filteredCategoryNews.length,
+                          itemBuilder: (context, index) {
+                            return _buildNewsListItem(
+                                context, filteredCategoryNews[index]);
+                          },
+                        ),
+                ),
+              ),
+            if (searchQuery.isEmpty)
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final article = categoryNews[index];
+                    return _buildNewsListItem(context, article);
+                  },
+                  childCount: categoryNews.length,
+                ),
+              ),
+            if (searchQuery.isEmpty && categoryNews.isEmpty)
+              SliverToBoxAdapter(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.darkTheme.primaryColor,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Color _getCategoryColor(String category) {
     switch (category) {

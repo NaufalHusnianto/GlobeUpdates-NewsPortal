@@ -15,8 +15,8 @@ class AppTheme {
       bodyLarge: TextStyle(color: Colors.white70, fontSize: 16),
     ),
     buttonTheme: const ButtonThemeData(
-      buttonColor: Colors.blueGrey, // Button color
-      textTheme: ButtonTextTheme.primary, // Text color on buttons
+      buttonColor: Colors.blueGrey,
+      textTheme: ButtonTextTheme.primary,
     ),
   );
 }

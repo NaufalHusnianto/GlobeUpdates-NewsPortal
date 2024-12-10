@@ -32,15 +32,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _updateProfile() async {
     try {
-      // Ambil input dari controller
       final fullname = _fullnameController.text.trim();
       final username = _usernameController.text.trim();
 
       if (fullname.isNotEmpty || username.isNotEmpty) {
         await user?.updateDisplayName(fullname);
-        await user?.reload(); // Reload user data dari Firebase
+        await user?.reload();
         setState(() {
-          _isEditing = false; // Kembali ke mode non-edit
+          _isEditing = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully!')),
@@ -57,8 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _fullnameController.text = user?.displayName ?? '';
-    // Username dapat disimpan di custom claims atau Firestore jika perlu.
-    _usernameController.text = ''; // Tambahkan jika menggunakan field username.
+    _usernameController.text = '';
   }
 
   @override
@@ -69,7 +67,6 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Avatar pengguna
             CircleAvatar(
               radius: 50,
               backgroundColor: Colors.cyan,
@@ -87,8 +84,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   : null,
             ),
             const SizedBox(height: 20),
-
-            // Mode tampilan atau edit
             if (_isEditing)
               Column(
                 children: [
@@ -182,10 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
-
             const SizedBox(height: 16),
-
-            // Tombol Logout
             ElevatedButton(
               onPressed: () async {
                 final shouldLogout = await showDialog<bool>(
@@ -221,9 +213,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 }
               },
-              // onPressed: () {
-              //   print(FirebaseAuth.instance.currentUser);
-              // },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
