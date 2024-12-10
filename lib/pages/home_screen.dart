@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Tech', 'value': 'technology'},
     {'name': 'Business', 'value': 'business'},
     {'name': 'Entertainment', 'value': 'entertainment'},
-    {'name': 'Education', 'value': 'science'},
+    {'name': 'Science', 'value': 'science'},
   ];
 
   @override
@@ -132,10 +132,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('articles');
 
     try {
-      // Sanitasi URL
-      final sanitizedUrl = _sanitizeUrl(article['url'] ?? '');
-
-      // Gunakan URL yang disanitasi atau buat ID unik
       final docId = article['id'];
 
       await userBookmarksRef.doc(docId).set({
@@ -348,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Colors.cyan;
       case 'business':
         return Colors.indigo;
-      case 'education':
+      case 'science':
         return Colors.amberAccent;
       case 'entertainment':
         return Colors.tealAccent;
