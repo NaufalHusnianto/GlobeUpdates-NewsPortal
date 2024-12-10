@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:globeupdates/theme/theme.dart';
 
@@ -40,9 +41,27 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          const CircleAvatar(
+          CircleAvatar(
             radius: 20,
-            backgroundImage: AssetImage('assets/profile.jpg'),
+            backgroundColor: Colors.cyan[800],
+            backgroundImage: FirebaseAuth.instance.currentUser?.photoURL != null
+                ? NetworkImage(FirebaseAuth.instance.currentUser!.photoURL!)
+                : null,
+            child: FirebaseAuth.instance.currentUser?.photoURL == null
+                ? Text(
+                    (FirebaseAuth.instance.currentUser?.displayName ?? 'NN')
+                        .split(' ')
+                        .map((e) => e.isNotEmpty ? e[0] : '')
+                        .take(2)
+                        .join()
+                        .toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : null,
           ),
         ],
       ),

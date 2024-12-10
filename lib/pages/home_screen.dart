@@ -383,6 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Image.network(
                   article['urlToImage'] ?? '',
                   fit: BoxFit.cover,
+                  height: 300,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
 

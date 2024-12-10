@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globeupdates/components/custom_app_bar.dart';
+import 'package:globeupdates/pages/profile_page.dart';
 import 'package:globeupdates/theme/theme.dart';
 import 'package:globeupdates/auth.dart';
 import 'package:globeupdates/pages/home_screen.dart';
@@ -49,9 +50,31 @@ class GlobalLayout extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundImage: AssetImage('assets/profile.jpg'),
+                  const SizedBox(height: 10),
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundColor: Colors.grey[800],
+                    backgroundImage:
+                        FirebaseAuth.instance.currentUser?.photoURL != null
+                            ? NetworkImage(
+                                FirebaseAuth.instance.currentUser!.photoURL!)
+                            : null,
+                    child: FirebaseAuth.instance.currentUser?.photoURL == null
+                        ? Text(
+                            (FirebaseAuth.instance.currentUser?.displayName ??
+                                    'NN')
+                                .split(' ')
+                                .map((e) => e.isNotEmpty ? e[0] : '')
+                                .take(2)
+                                .join()
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
@@ -107,6 +130,20 @@ class GlobalLayout extends StatelessWidget {
                 title: Text('Bookmark'),
               ),
             ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
+                );
+              },
+              child: const ListTile(
+                leading: Icon(Icons.person),
+                title: Text('Profile'),
+              ),
+            ),
             const Divider(), // Divider untuk memisahkan logout
             GestureDetector(
               onTap: () async {
@@ -118,10 +155,16 @@ class GlobalLayout extends StatelessWidget {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.cyan,
+                        ),
                         child: const Text('Cancel'),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.red,
+                        ),
                         child: const Text('Logout'),
                       ),
                     ],

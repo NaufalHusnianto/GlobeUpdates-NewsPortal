@@ -105,18 +105,40 @@ class _LoginPageState extends State<LoginPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: title,
+        border: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.cyan),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.cyan, width: 2.0),
+        ),
+        labelStyle: const TextStyle(color: Colors.white),
       ),
+      cursorColor: Colors.cyan,
     );
   }
 
   Widget _errorMessage() {
-    return Text(errorMessage == '' ? '' : 'Humm ? $errorMessage');
+    if (errorMessage == null || errorMessage!.isEmpty) {
+      return const SizedBox.shrink();
+    } else if (_controllerEmail.text.isEmpty ||
+        _controllerPassword.text.isEmpty) {
+      return const Text(
+        "All fields must be filled",
+        style: TextStyle(color: Colors.red),
+      );
+    } else {
+      return const Text(
+        "Invalid email or password",
+        style: TextStyle(color: Colors.red),
+      );
+    }
   }
 
   Widget _registerFields() {
     return Column(
       children: [
         _entryField('Fullname', _controllerFullName, false),
+        const SizedBox(height: 10),
         _entryField('Username', _controllerUsername, false),
       ],
     );
@@ -126,10 +148,19 @@ class _LoginPageState extends State<LoginPage> {
     return ElevatedButton(
       onPressed:
           isLogin ? signInWithEmailAndPassword : createUserWithEmailAndPassword,
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: const BorderSide(color: Colors.cyan),
+        ),
+        backgroundColor: Colors.cyan.shade800,
+        foregroundColor: Colors.white,
+        minimumSize: const Size.fromHeight(40),
+      ),
       child: Text(
         isLogin ? 'Login' : 'Register',
         style: const TextStyle(
-          color: Colors.cyan,
+          color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -160,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Text(
         isLogin ? 'Register' : 'Login',
         style: const TextStyle(
-          color: Colors.white,
+          color: Colors.cyan,
         ),
       ),
     );
@@ -174,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          height: MediaQuery.of(context).size.height,
+          height: MediaQuery.of(context).size.height - 100,
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -183,9 +214,13 @@ class _LoginPageState extends State<LoginPage> {
             children: <Widget>[
               _appLogos(),
               if (!isLogin) _registerFields(),
+              const SizedBox(height: 10),
               _entryField('Email', _controllerEmail, false),
+              const SizedBox(height: 10),
               _entryField('Password', _controllerPassword, true),
+              const SizedBox(height: 10),
               _errorMessage(),
+              const SizedBox(height: 15),
               _submitButton(),
               _loginOrRegisterButton(),
             ],
