@@ -103,7 +103,7 @@ class GlobalLayout extends StatelessWidget {
                 );
               },
               child: const ListTile(
-                leading: Icon(Icons.home),
+                leading: Icon(Icons.bookmark_add_rounded),
                 title: Text('Bookmark'),
               ),
             ),

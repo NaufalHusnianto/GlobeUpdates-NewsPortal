@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:globeupdates/layouts/global_layout.dart';
 import 'package:globeupdates/pages/detail_screen.dart';
 import 'package:globeupdates/theme/theme.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,6 +35,21 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchTopNews();
     fetchNewsSources();
     fetchCategoryNews();
+  }
+
+  // Metode untuk mensanitasi URL
+  String _sanitizeUrl(String url) {
+    // Hapus protokol (http:// atau https://)
+    url = url.replaceFirst(RegExp(r'^https?://'), '');
+
+    // Ganti double slash dengan single slash
+    url = url.replaceAll('//', '/');
+
+    // Hapus karakter yang tidak valid untuk ID Firestore
+    url = url.replaceAll(RegExp(r'[.#$\[\]]'), '_');
+
+    // Potong panjang URL jika terlalu panjang
+    return url.length > 50 ? url.substring(0, 50) : url;
   }
 
   Future<void> fetchTopNews() async {
@@ -105,6 +122,133 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedCategory = category;
     });
     fetchNewsSources();
+  }
+
+  Future<void> addBookmark(Map<String, dynamic> article) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userBookmarksRef = FirebaseFirestore.instance
+        .collection('bookmarks')
+        .doc(user.uid)
+        .collection('articles');
+
+    try {
+      // Sanitasi URL
+      final sanitizedUrl = _sanitizeUrl(article['url'] ?? '');
+
+      // Gunakan URL yang disanitasi atau buat ID unik
+      final docId =
+          sanitizedUrl.isEmpty ? userBookmarksRef.doc().id : sanitizedUrl;
+
+      await userBookmarksRef.doc(docId).set({
+        'title': article['title'] ?? '',
+        'description': article['description'] ?? '',
+        'imageUrl': article['urlToImage'] ?? '',
+        'author': article['author'] ?? '',
+        'url': article['url'] ?? '',
+        'content': article['content'] ?? '',
+        'publishedAt': article['publishedAt'] ?? '',
+      });
+
+      // Perbarui daftar artikel yang di-bookmark di lokal
+      setState(() {
+        bookmarkedArticles.add(article);
+      });
+
+      print('Bookmark ditambahkan');
+    } catch (e) {
+      print('Error menambah bookmark: $e');
+    }
+  }
+
+  Future<void> removeBookmark(String articleUrl) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userBookmarksRef = FirebaseFirestore.instance
+        .collection('bookmarks')
+        .doc(user.uid)
+        .collection('articles');
+
+    try {
+      // Sanitasi URL sebelum menghapus
+      final sanitizedUrl = _sanitizeUrl(articleUrl);
+
+      await userBookmarksRef.doc(sanitizedUrl).delete();
+
+      // Hapus dari daftar artikel yang di-bookmark di lokal
+      setState(() {
+        bookmarkedArticles
+            .removeWhere((article) => article['url'] == articleUrl);
+      });
+
+      print('Bookmark dihapus');
+    } catch (e) {
+      print('Error menghapus bookmark: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getBookmarks(String userId) async {
+    final userBookmarksRef = FirebaseFirestore.instance
+        .collection('bookmarks')
+        .doc(userId)
+        .collection('articles');
+
+    try {
+      final snapshot = await userBookmarksRef.get();
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print('Error fetching bookmarks: $e');
+      return [];
+    }
+  }
+
+  Future<bool> isBookmarked(String userId, String articleUrl) async {
+    final userBookmarksRef = FirebaseFirestore.instance
+        .collection('bookmarks')
+        .doc(userId)
+        .collection('articles');
+
+    try {
+      // Sanitasi URL sebelum memeriksa
+      final sanitizedUrl = _sanitizeUrl(articleUrl);
+
+      final doc = await userBookmarksRef.doc(sanitizedUrl).get();
+      return doc.exists;
+    } catch (e) {
+      print('Error memeriksa bookmark: $e');
+      return false;
+    }
+  }
+
+  Future<void> fetchBookmarks() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final bookmarks = await getBookmarks(user.uid);
+      setState(() {
+        bookmarkedArticles = bookmarks;
+      });
+    } catch (e) {
+      print('Error fetching bookmarks: $e');
+    }
+  }
+
+  Stream<List<Map<String, dynamic>>> bookmarksStream(String userId) {
+    final userBookmarksRef = FirebaseFirestore.instance
+        .collection('bookmarks')
+        .doc(userId)
+        .collection('articles');
+
+    return userBookmarksRef.snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    });
   }
 
   @override
@@ -314,7 +458,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNewsListItem(BuildContext context, dynamic article) {
-    final isBookmarked = bookmarkedArticles.contains(article);
+    final isBookmarked = bookmarkedArticles
+        .any((bookmarkedArticle) => bookmarkedArticle['url'] == article['url']);
 
     return GestureDetector(
       onTap: () {
@@ -381,13 +526,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: isBookmarked ? Colors.yellow : Colors.grey,
                         ),
                         onPressed: () {
-                          setState(() {
-                            if (isBookmarked) {
-                              bookmarkedArticles.remove(article);
-                            } else {
-                              bookmarkedArticles.add(article);
-                            }
-                          });
+                          if (isBookmarked) {
+                            removeBookmark(article['url']);
+                          } else {
+                            addBookmark(article);
+                          }
                         },
                       ),
                     ],
