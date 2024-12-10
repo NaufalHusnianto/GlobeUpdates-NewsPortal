@@ -17,10 +17,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> topNews = [];
   List<dynamic> categoryNews = [];
+  List<dynamic> filteredCategoryNews = [];
   List<dynamic> sources = [];
   List<dynamic> bookmarkedArticles = [];
 
   String selectedCategory = 'general';
+  String searchQuery = '';
+
+  final TextEditingController searchController = TextEditingController();
 
   final List<Map<String, String>> categories = [
     {'name': 'General', 'value': 'general'},
@@ -37,6 +41,18 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchTopNews();
     fetchNewsSources();
     fetchCategoryNews();
+    searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      searchQuery = searchController.text.toLowerCase();
+      filteredCategoryNews = categoryNews.where((article) {
+        // Memeriksa apakah judul artikel mengandung kata kunci pencarian
+        final title = article['title']?.toLowerCase() ?? '';
+        return title.contains(searchQuery);
+      }).toList();
+    });
   }
 
   // Metode untuk mensanitasi URL
@@ -246,93 +262,145 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return GlobalLayout(
-      child: Scaffold(
-        backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
-        body: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 250,
-                    child: topNews.isEmpty
-                        ? Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.darkTheme.primaryColor,
-                            ),
-                          )
-                        : PageView.builder(
-                            itemCount: topNews.length,
-                            itemBuilder: (context, index) {
-                              return _buildTopNewsItem(context, topNews[index]);
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Category Buttons
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _StickyHeaderDelegate(
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                      child: TextButton(
-                        onPressed: () =>
-                            _onCategorySelected(category['value']!),
-                        style: TextButton.styleFrom(
-                          backgroundColor:
-                              _getCategoryColor(category['value']!),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        child: Text(
-                          category['name']!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            // Category News List
-            categoryNews.isEmpty
-                ? SliverToBoxAdapter(
-                    child: Center(
+ Widget build(BuildContext context) {
+  return GlobalLayout(
+    child: Scaffold(
+      backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
+      body: CustomScrollView(
+        slivers: [
+          // Top News Section (PageView for top headlines)
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 250, // Adjust height for top news
+              child: topNews.isEmpty
+                  ? Center(
                       child: CircularProgressIndicator(
                         color: AppTheme.darkTheme.primaryColor,
                       ),
+                    )
+                  : PageView.builder(
+                      itemCount: topNews.length,
+                      itemBuilder: (context, index) {
+                        return _buildTopNewsItem(context, topNews[index]);
+                      },
                     ),
-                  )
-                : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) =>
-                          _buildNewsListItem(context, categoryNews[index]),
-                      childCount: categoryNews.length,
-                    ),
+            ),
+          ),
+
+          // Search Bar Section (if it's visible, above the category buttons)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: TextField(
+                controller: searchController,
+                onChanged: (query) {
+                  setState(() {
+                    searchQuery = query.toLowerCase();
+                    filteredCategoryNews = categoryNews.where((article) {
+                      final title = article['title']?.toLowerCase() ?? '';
+                      return title.contains(searchQuery);
+                    }).toList();
+                  });
+                },
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Search news...',
+                  hintStyle: TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: Colors.black.withOpacity(0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
                   ),
-          ],
-        ),
+                  prefixIcon: Icon(Icons.search, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+
+          // Category Buttons (always visible below search bar)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickyHeaderDelegate(
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                    child: TextButton(
+                      onPressed: () => _onCategorySelected(category['value']!),
+                      style: TextButton.styleFrom(
+                        backgroundColor: _getCategoryColor(category['value']!),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        category['name']!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // Show search results below categories (if search query exists)
+          if (searchQuery.isNotEmpty) 
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 250, // Adjust the height based on the content
+                child: filteredCategoryNews.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No articles found for "$searchQuery"',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filteredCategoryNews.length,
+                        itemBuilder: (context, index) {
+                          return _buildNewsListItem(context, filteredCategoryNews[index]);
+                        },
+                      ),
+              ),
+            ),
+          
+          // Show category news (if search query is empty)
+          if (searchQuery.isEmpty) 
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final article = categoryNews[index];
+                  return _buildNewsListItem(context, article);
+                },
+                childCount: categoryNews.length,
+              ),
+            ),
+          
+          // Loading or Empty State for Category News (if search query is empty)
+          if (searchQuery.isEmpty && categoryNews.isEmpty)
+            SliverToBoxAdapter(
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: AppTheme.darkTheme.primaryColor,
+                ),
+              ),
+            ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Color _getCategoryColor(String category) {
     switch (category) {
