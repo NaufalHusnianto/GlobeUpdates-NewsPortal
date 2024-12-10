@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:globeupdates/theme/theme.dart';
+import 'package:globeupdates/pages/profile_page.dart'; // Import halaman ProfilePage
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onMenuTap;
@@ -41,27 +42,37 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.cyan[800],
-            backgroundImage: FirebaseAuth.instance.currentUser?.photoURL != null
-                ? NetworkImage(FirebaseAuth.instance.currentUser!.photoURL!)
-                : null,
-            child: FirebaseAuth.instance.currentUser?.photoURL == null
-                ? Text(
-                    (FirebaseAuth.instance.currentUser?.displayName ?? 'NN')
-                        .split(' ')
-                        .map((e) => e.isNotEmpty ? e[0] : '')
-                        .take(2)
-                        .join()
-                        .toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
+          InkWell(
+            onTap: () {
+              // Navigasi ke ProfilePage
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+            child: CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.cyan[800],
+              backgroundImage: FirebaseAuth.instance.currentUser?.photoURL !=
+                      null
+                  ? NetworkImage(FirebaseAuth.instance.currentUser!.photoURL!)
+                  : null,
+              child: FirebaseAuth.instance.currentUser?.photoURL == null
+                  ? Text(
+                      (FirebaseAuth.instance.currentUser?.displayName ?? 'NN')
+                          .split(' ')
+                          .map((e) => e.isNotEmpty ? e[0] : '')
+                          .take(2)
+                          .join()
+                          .toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
+            ),
           ),
         ],
       ),
