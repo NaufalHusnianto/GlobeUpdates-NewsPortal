@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Tech', 'value': 'technology'},
     {'name': 'Business', 'value': 'business'},
     {'name': 'Entertainment', 'value': 'entertainment'},
-    {'name': 'Education', 'value': 'education'},
+    {'name': 'Education', 'value': 'science'},
   ];
 
   @override
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchNewsSources() async {
     final String apiUrl =
-        'https://newsapi.org/v2/top-headlines/sources?apiKey=6f9cb84a936449fbbc9a5322dfe72375';
+        'https://newsapi.org/v2/top-headlines/sources?apiKey=0ebe6cd23c6843bc93fe9e51bde2ee4c';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final sourceIds = sources.map((source) => source['id']).join(',');
 
     final String apiUrl =
-        'https://newsapi.org/v2/top-headlines?sources=$sourceIds&apiKey=6f9cb84a936449fbbc9a5322dfe72375';
+        'https://newsapi.org/v2/top-headlines?sources=$sourceIds&apiKey=0ebe6cd23c6843bc93fe9e51bde2ee4c';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -136,10 +136,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final sanitizedUrl = _sanitizeUrl(article['url'] ?? '');
 
       // Gunakan URL yang disanitasi atau buat ID unik
-      final docId =
-          sanitizedUrl.isEmpty ? userBookmarksRef.doc().id : sanitizedUrl;
+      final docId = article['id'];
 
       await userBookmarksRef.doc(docId).set({
+        'id': article['id'] ?? '',
         'title': article['title'] ?? '',
         'description': article['description'] ?? '',
         'imageUrl': article['urlToImage'] ?? '',
