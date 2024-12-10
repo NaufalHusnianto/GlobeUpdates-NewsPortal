@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:globeupdates/auth.dart';
@@ -44,17 +45,31 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       await FirebaseAuth.instance.currentUser?.updateDisplayName(
-        '${_controllerFullName.text} (${_controllerUsername.text})',
+        _controllerFullName.text,
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
+      final user = FirebaseAuth.instance.currentUser;
+      await FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
+        'uid': user?.uid,
+        'fullname': _controllerFullName.text,
+        'username': _controllerUsername.text,
+        'email': _controllerEmail.text,
+        'createdAt': DateTime.now(),
       });
+
+      // Periksa apakah widget masih mounted sebelum navigasi
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          errorMessage = e.message;
+        });
+      }
     }
   }
 
@@ -62,10 +77,10 @@ class _LoginPageState extends State<LoginPage> {
     return Row(
       children: [
         Image.asset(
-          'assets/logo.png', // Gambar logo Anda
-          height: 30, // Ukuran gambar
+          'assets/logo.png',
+          height: 30,
         ),
-        const SizedBox(width: 10), // Spasi antara gambar dan teks
+        const SizedBox(width: 10),
         const Text(
           'GlobeUpdates',
           style: TextStyle(
