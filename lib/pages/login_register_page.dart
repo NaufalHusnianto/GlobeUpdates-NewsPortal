@@ -196,33 +196,33 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  @override
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: _title(),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height - 100,
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              _appLogos(),
-              if (!isLogin) _registerFields(),
-              const SizedBox(height: 10),
-              _entryField('Email', _controllerEmail, false),
-              const SizedBox(height: 10),
-              _entryField('Password', _controllerPassword, true),
-              const SizedBox(height: 10),
-              _errorMessage(),
-              const SizedBox(height: 15),
-              _submitButton(),
-              _loginOrRegisterButton(),
-            ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                _appLogos(),
+                if (!isLogin) _registerFields(),
+                const SizedBox(height: 10),
+                _entryField('Email', _controllerEmail, false),
+                const SizedBox(height: 10),
+                _entryField('Password', _controllerPassword, true),
+                const SizedBox(height: 10),
+                _errorMessage(),
+                const SizedBox(height: 15),
+                _submitButton(),
+                _loginOrRegisterButton(),
+              ],
+            ),
           ),
         ),
       ),
