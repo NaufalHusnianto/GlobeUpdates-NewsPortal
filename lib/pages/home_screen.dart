@@ -315,6 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               _getCategoryColor(category['value']!),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 4),
+                              side: BorderSide(color: const Color.fromARGB(255, 249, 249, 249)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
